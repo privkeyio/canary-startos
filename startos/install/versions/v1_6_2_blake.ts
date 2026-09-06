@@ -14,6 +14,24 @@ Electrs is no longer offered as an Electrum server. It has no build that underst
 
 ## Switching to this build
 
-This is a flavor of the same package rather than a separate one, so it replaces the standard build in place and keeps its wallets, metadata and notification settings.`,
-  migrations: {},
+This is a flavor of the same package rather than a separate one, so it replaces the standard build in place and keeps its wallets, metadata and notification settings. Nothing is resynced: only the header parsing changes, and the wallet database format is untouched.
+
+## Switching back
+
+Returning to the standard build is allowed. Nothing in the stored data is specific to this flavor, so the switch is reversible; the standard build simply cannot sync past the activation height again.`,
+  migrations: {
+    // Nothing to migrate in either direction within this flavor.
+    up: async () => {},
+    down: async () => {},
+    other: {
+      // Arriving from, or returning to, the unflavored build. The wallet database and settings are
+      // identical between the two, so neither direction has anything to convert and no resync
+      // happens. Unlike Fulcrum, there is no on-disk format that only this flavor can read, so the
+      // reverse switch is left available rather than blocked.
+      ['^1']: {
+        up: async () => {},
+        down: async () => {},
+      },
+    },
+  },
 })
