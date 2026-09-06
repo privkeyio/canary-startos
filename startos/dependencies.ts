@@ -9,16 +9,13 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     return {
       fulcrum: {
         kind: 'running',
-        versionRange: '>=2.1.0:3-beta.1',
+        // The BLAKE2b hardfork changes the proof of work at an activation height: from that block
+        // on, headers are 164 bytes and hashed with BLAKE2b rather than 80 bytes and SHA256d. Only
+        // the `blake` flavor of Fulcrum indexes and serves those headers; the standard build stops
+        // at the activation block. Requiring the flavor keeps this from being pointed at a server
+        // that will never serve them.
+        versionRange: '>=#blake:2.1.2:0',
         healthChecks: ['primary', 'sync-progress'],
-      },
-    }
-  } else if (electrum === 'electrs') {
-    return {
-      electrs: {
-        kind: 'running',
-        versionRange: '>=0.11.0:1-beta.1',
-        healthChecks: ['electrs', 'sync'],
       },
     }
   } else {

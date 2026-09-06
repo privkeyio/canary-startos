@@ -4,8 +4,8 @@ export const manifest = setupManifest({
   id: 'canary',
   title: 'Canary',
   license: 'Elastic-2.0',
-  packageRepo: 'https://github.com/schjonhaug/canary-startos/',
-  upstreamRepo: 'https://github.com/schjonhaug/canary/',
+  packageRepo: 'https://github.com/privkeyio/canary-startos/',
+  upstreamRepo: 'https://github.com/privkeyio/canary/',
   marketingUrl: 'https://canarybitcoin.com',
   donationUrl: 'https://canarybitcoin.com/donations',
   docsUrls: [
@@ -28,13 +28,13 @@ Perfect for monitoring your cold storage wallets or watching family members' wal
   images: {
     frontend: {
       source: {
-        dockerTag: 'schjonhaug/canary-frontend:v1.5.0',
+        dockerTag: 'privkeyio/canary-frontend:v1.6.2-blake2b',
       },
       arch: ['x86_64', 'aarch64'],
     },
     backend: {
       source: {
-        dockerTag: 'schjonhaug/canary-backend:v1.5.0',
+        dockerTag: 'privkeyio/canary-backend:v1.6.2-blake2b',
       },
       arch: ['x86_64', 'aarch64'],
     },
@@ -42,18 +42,11 @@ Perfect for monitoring your cold storage wallets or watching family members' wal
   dependencies: {
     fulcrum: {
       optional: true,
-      description: 'Used for syncing wallet data from the Bitcoin blockchain',
+      description:
+        'Used for syncing wallet data from the Bitcoin blockchain. Requires the BLAKE2b flavor, which is the only build that serves the extended headers used past the hardfork activation height.',
       metadata: {
         icon: 'https://raw.githubusercontent.com/remcoros/fulcrum-startos/refs/heads/update/040-new/icon.png',
         title: 'Fulcrum',
-      },
-    },
-    electrs: {
-      optional: true,
-      description: 'Used for syncing wallet data from the Bitcoin blockchain',
-      metadata: {
-        icon: 'https://raw.githubusercontent.com/Start9-Community/electrs-startos/refs/heads/master/icon.svg',
-        title: 'Electrs',
       },
     },
   },

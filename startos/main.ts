@@ -15,6 +15,15 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const credentials = await ensureCredentials(effects)
   const mountpoint = '/app/data'
 
+  // The browser talks to the Next.js frontend, which forwards the request headers verbatim to the
+  // server, so the server sees the browser's real Origin: whichever address StartOS exposes the UI
+  // on. It validates that origin and refuses to start without at least one, so pass every exported
+  // address rather than a fixed localhost guess.
+  const uiOrigins = await sdk.serviceInterface
+    .getOwn(effects, 'ui', (iface) => iface?.addressInfo?.format('urlstring') ?? [])
+    .const()
+  const frontendUrls = [`http://localhost:${uiPort}`, ...uiOrigins].join(',')
+
   /**
    * ======================== Daemons ========================
    *
@@ -46,6 +55,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           CANARY_SELF_HOSTED_ADMIN_PASSWORD: credentials.adminPassword,
           CANARY_SYNC_INTERVAL: '60',
           JWT_SECRET: credentials.jwtSecret,
+          FRONTEND_URLS: frontendUrls,
         },
       },
       ready: {
