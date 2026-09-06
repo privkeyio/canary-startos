@@ -1,4 +1,7 @@
 *.s9pk
+*.s9pk.sha256
+*.s9pk.sha256.asc
+privkeyio-signing-key.asc
 startos/*.js
 node_modules/
 .DS_Store

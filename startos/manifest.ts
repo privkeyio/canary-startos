@@ -28,13 +28,22 @@ Perfect for monitoring your cold storage wallets or watching family members' wal
   images: {
     frontend: {
       source: {
-        dockerTag: 'privkeyio/canary-frontend:v1.6.2-blake2b',
+        dockerBuild: {
+          workdir: 'canary/frontend',
+          dockerfile: 'canary/frontend/Dockerfile',
+          // Baked in at build time, not read at runtime: the self-hosted auth path in the
+          // frontend's proxy is gated on this and Next.js resolves NEXT_PUBLIC_* at compile time.
+          buildArgs: { NEXT_PUBLIC_CANARY_MODE: 'self-hosted' },
+        },
       },
       arch: ['x86_64', 'aarch64'],
     },
     backend: {
       source: {
-        dockerTag: 'privkeyio/canary-backend:v1.6.2-blake2b',
+        dockerBuild: {
+          workdir: 'canary/backend',
+          dockerfile: 'canary/backend/Dockerfile',
+        },
       },
       arch: ['x86_64', 'aarch64'],
     },
