@@ -31,19 +31,31 @@ export const main = sdk.setupMain(async ({ effects }) => {
    *
    * Each daemon defines its own health check, which can optionally be exposed to the user.
    */
+  const backendSub = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'backend' },
+    sdk.Mounts.of().mountVolume({
+      volumeId: 'main',
+      subpath: null,
+      mountpoint,
+      readonly: false,
+    }),
+    'backend-sub',
+  )
+
   return sdk.Daemons.of(effects)
+    // The server runs as an unprivileged user, but a freshly created volume is owned by root, so
+    // it cannot create its wallet directory on a first install. Take ownership before it starts.
+    .addOneshot('chown', {
+      subcontainer: backendSub,
+      exec: {
+        command: ['chown', '-R', 'canary:canary', mountpoint],
+        user: 'root',
+      },
+      requires: [],
+    })
     .addDaemon('server', {
-      subcontainer: await sdk.SubContainer.of(
-        effects,
-        { imageId: 'backend' },
-        sdk.Mounts.of().mountVolume({
-          volumeId: 'main',
-          subpath: null,
-          mountpoint,
-          readonly: false,
-        }),
-        'backend-sub',
-      ),
+      subcontainer: backendSub,
       exec: {
         command: sdk.useEntrypoint(),
         env: {
@@ -71,7 +83,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             },
           ),
       },
-      requires: [],
+      requires: ['chown'],
     })
     .addDaemon('web', {
       subcontainer: await sdk.SubContainer.of(
