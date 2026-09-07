@@ -66,7 +66,7 @@ One, and it must be a specific flavor.
 
 **The `#blake` flavor is required, not merely preferred.** Past the hard fork's activation height only that build indexes and serves the extended headers; the standard Fulcrum stops at the activation block rather than serving wrong data, so it can never satisfy this package.
 
-**Electrs is not offered.** No build of it understands the extended headers, so past the activation height it cannot serve this service. An install that had previously selected Electrs is asked to choose a supported server.
+**Electrs is not offered for now.** A BLAKE2b-aware Electrs exists as source, but no StartOS package of it does, and the packaged Electrs stops at the activation height. An install that had previously selected Electrs is asked to choose a supported server. This is a packaging gap rather than a limitation of Electrs: if a `#blake` flavor of the Electrs package appears, the option can be restored by adding it back to the selector and giving it a version range, exactly as Fulcrum has.
 
 ## Network Access and Interfaces
 
@@ -120,7 +120,7 @@ Switching back to the standard build is allowed. Nothing stored is specific to t
 
 ## Limitations and Differences
 
-- Electrs is withdrawn as an option, as above.
+- Electrs is not selectable, as above, pending a StartOS package of a BLAKE2b-aware build.
 - The package requires the `#blake` Fulcrum flavor, so it cannot be installed alongside a standard Fulcrum as the selected server.
 - Only mainnet is configured.
 

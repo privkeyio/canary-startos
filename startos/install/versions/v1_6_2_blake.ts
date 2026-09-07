@@ -10,7 +10,7 @@ The hardfork changes the proof of work at an activation height: from that block 
 
 Only Knots schedules the hardfork, and only the BLAKE2b flavor of Fulcrum indexes and serves the extended headers. This build depends on that flavor specifically; the standard Fulcrum no longer satisfies it, because past the activation height it stops rather than serving wrong data.
 
-Electrs is no longer offered as an Electrum server. It has no build that understands the extended headers, so past the activation height it cannot serve this service. An existing install that selected Electrs will ask for a supported server to be chosen.
+Electrs is not offered for now. A BLAKE2b-aware Electrs exists as source, but no StartOS package of it does, and the packaged Electrs stops at the activation height. An existing install that selected Electrs will ask for a supported server to be chosen. This is a packaging gap rather than a limitation of Electrs, and the option returns if such a package appears.
 
 ## Switching to this build
 

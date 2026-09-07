@@ -6,8 +6,9 @@ const { InputSpec, Value } = sdk
 const inputSpec = InputSpec.of({
   electrum: Value.select({
     name: 'Electrum Server',
-    // Electrs is not offered: it has no build that understands the BLAKE2b hardfork's 164 byte
-    // headers, so past the activation height it cannot serve this service.
+    // Electrs is not offered for now. A BLAKE2b-aware Electrs exists as source, but no StartOS
+    // package of it does, and the packaged one stops at the activation height. Restore this entry
+    // if such a package appears; nothing else here has to change.
     values: {
       fulcrum: 'Fulcrum',
     },
