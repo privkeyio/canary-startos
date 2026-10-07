@@ -52,7 +52,7 @@ Perfect for monitoring your cold storage wallets or watching family members' wal
     fulcrum: {
       optional: true,
       description:
-        'Used for syncing wallet data from the Bitcoin blockchain. Requires the BLAKE2b flavor, which is the only build that serves the extended headers used past the hardfork activation height.',
+        'Used for syncing wallet data from the Bitcoin blockchain. Requires the BLAKE2b flavor, which is the only build that serves the extended headers used once the proof of work has changed to BLAKE2b.',
       metadata: {
         icon: 'https://raw.githubusercontent.com/remcoros/fulcrum-startos/refs/heads/update/040-new/icon.png',
         title: 'Fulcrum',
