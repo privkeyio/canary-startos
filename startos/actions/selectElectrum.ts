@@ -33,7 +33,7 @@ export const selectElectrum = sdk.Action.withInput(
 
   // optionally pre-fill the input form
   async ({ effects }) => {
-    // An install from before the BLAKE2b hardfork may have 'electrs' stored, which is no longer
+    // An install from before the BLAKE2b change may have 'electrs' stored, which is no longer
     // offered. Leave the field empty in that case so a supported server has to be chosen.
     const stored = await storeJson.read((s) => s.electrum).once()
     return { electrum: stored === 'fulcrum' ? stored : undefined }

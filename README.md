@@ -13,7 +13,7 @@
 - **Upstream repo:** <https://github.com/privkeyio/canary> (a fork of <https://github.com/schjonhaug/canary>)
 - **Wrapper repo:** <https://github.com/privkeyio/canary-startos>
 
-This package builds Canary from a fork carrying BLAKE2b proof-of-work hard fork support. See [BLAKE2b Hard Fork Support](#blake2b-hard-fork-support).
+This package builds Canary from a fork that supports Bitcoin's change of proof of work to BLAKE2b. See [BLAKE2b Proof of Work](#blake2b-proof-of-work).
 
 ---
 
@@ -26,7 +26,7 @@ This package builds Canary from a fork carrying BLAKE2b proof-of-work hard fork 
 - [Installation and First-Run Flow](#installation-and-first-run-flow)
 - [Actions](#actions)
 - [Health Checks](#health-checks)
-- [BLAKE2b Hard Fork Support](#blake2b-hard-fork-support)
+- [BLAKE2b Proof of Work](#blake2b-proof-of-work)
 - [Limitations and Differences](#limitations-and-differences)
 - [Building](#building)
 
@@ -64,7 +64,7 @@ One, and it must be a specific flavor.
 | ---------- | --------- | -------------------- | ---------------------------- | -------------------------------------- |
 | Fulcrum    | `running` | `>=#blake:2.1.2:0`   | `primary`, `sync-progress`   | Address lookups and block headers      |
 
-**The `#blake` flavor is required, not merely preferred.** Past the hard fork's activation height only that build indexes and serves the extended headers; the standard Fulcrum stops at the activation block rather than serving wrong data, so it can never satisfy this package.
+**The `#blake` flavor is required, not merely preferred.** Past the activation height only that build indexes and serves the extended headers; the standard Fulcrum stops at the activation block rather than serving wrong data, so it can never satisfy this package.
 
 **Electrs is not offered for now.** A BLAKE2b-aware Electrs exists as source, but no StartOS package of it does, and the packaged Electrs stops at the activation height. An install that had previously selected Electrs is asked to choose a supported server. This is a packaging gap rather than a limitation of Electrs: if a `#blake` flavor of the Electrs package appears, the option can be restored by adding it back to the selector and giving it a version range, exactly as Fulcrum has.
 
@@ -95,11 +95,11 @@ The browser talks to the frontend, which forwards requests to the backend on `lo
 | Server         | `GET /api/block-headers/current` on the backend             |
 | Web interface  | The UI port is listening                                    |
 
-The server check is worth knowing about: it exercises the block header path, which is exactly what the hard fork changes. If the Electrum server is serving headers this package cannot parse, this check is what fails.
+The server check is worth knowing about: it exercises the block header path, which is exactly what the change affects. If the Electrum server is serving headers this package cannot parse, this check is what fails.
 
-## BLAKE2b Hard Fork Support
+## BLAKE2b Proof of Work
 
-The hard fork changes the proof of work at an activation height. From that block on, a block header is 164 bytes and its id is a BLAKE2b hash, rather than 80 bytes and SHA256d. A header announces its own form through bit 31 of its version word, so nothing keys off the block height and headers below the activation height are unchanged.
+Bitcoin's proof of work changes to BLAKE2b at an activation height. This is not a new chain. From that block on, a block header is 164 bytes and its id is a BLAKE2b hash, rather than 80 bytes and SHA256d. A header announces its own form through bit 31 of its version word, so nothing keys off the block height and headers below the activation height are unchanged.
 
 The standard build parses 80 bytes and rejects the rest, so every header lookup fails with `parse failed: data not consumed entirely when explicitly deserializing`, no wallet syncs, and the queue backs up indefinitely.
 
