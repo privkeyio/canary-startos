@@ -1,7 +1,7 @@
 PACKAGE_ID := $(shell awk -F"'" '/id:/ {print $$2}' startos/manifest.ts)
 INGREDIENTS := $(shell start-cli s9pk list-ingredients 2>/dev/null)
 
-.PHONY: all aarch64 x86_64 riscv64 arm arm64 x86 riscv arch/* clean install check-deps check-init package ingredients
+.PHONY: all aarch64 x86_64 riscv64 arm arm64 x86 riscv arch/* clean install check-deps check-cli check-init package ingredients
 .DELETE_ON_ERROR:
 .SECONDARY:
 
@@ -36,11 +36,13 @@ x86 x86_64: arch/x86_64
 arm arm64 aarch64: arch/aarch64
 riscv riscv64: arch/riscv64
 
+$(PACKAGE_ID).s9pk: | check-cli
 $(PACKAGE_ID).s9pk: javascript/index.js $(INGREDIENTS) .git/HEAD .git/index
 	@$(MAKE) --no-print-directory ingredients
 	@echo "   Packing '$@'..."
 	start-cli s9pk pack -o $@
 
+$(PACKAGE_ID)_%.s9pk: | check-cli
 $(PACKAGE_ID)_%.s9pk: javascript/index.js $(INGREDIENTS) .git/HEAD .git/index
 	@$(MAKE) --no-print-directory ingredients
 	@echo "   Packing '$@'..."
@@ -62,6 +64,21 @@ install: | check-deps check-init
 	fi; \
 	printf "\n🚀 Installing %s to %s ...\n" "$$S9PK" "$$HOST"; \
 	start-cli package install -s "$$S9PK"
+
+# This package targets start-sdk 1.x. start-cli 2.x expects a workspace directory
+# containing package repos and fails here with "No packaging workspace found",
+# so refuse early with an explanation rather than that error.
+check-cli:
+	@command -v start-cli >/dev/null || \
+		(echo "Error: start-cli not found. See https://docs.start9.com/latest/developer-guide/sdk/installing-the-sdk" && exit 1)
+	@v=$$(start-cli --version 2>/dev/null | awk '{print $$NF}'); \
+	case "$$v" in \
+		0.*|1.*) ;; \
+		*) echo "Error: start-cli $$v cannot pack this package, which targets start-sdk 1.x."; \
+		   echo "       Use a 0.x or 1.x start-cli, for example:"; \
+		   echo "         PATH=/path/to/older/start-cli/dir:\$$PATH make $(MAKECMDGOALS)"; \
+		   exit 1 ;; \
+	esac
 
 check-deps:
 	@command -v start-cli >/dev/null || \
