@@ -65,19 +65,26 @@ install: | check-deps check-init
 	printf "\n🚀 Installing %s to %s ...\n" "$$S9PK" "$$HOST"; \
 	start-cli package install -s "$$S9PK"
 
-# This package targets start-sdk 1.x. start-cli 2.x expects a workspace directory
-# containing package repos and fails here with "No packaging workspace found",
-# so refuse early with an explanation rather than that error.
+# start-cli 2.x packs only inside a packaging workspace: the nearest parent
+# directory whose .startos/config.yaml sets `schema`, found by walking up from
+# here (see find_workspace_config in start-core). Without one it fails with
+# "No packaging workspace found", so check first and say how to create one.
 check-cli:
 	@command -v start-cli >/dev/null || \
 		(echo "Error: start-cli not found. See https://docs.start9.com/latest/developer-guide/sdk/installing-the-sdk" && exit 1)
 	@v=$$(start-cli --version 2>/dev/null | awk '{print $$NF}'); \
 	case "$$v" in \
 		0.*|1.*) ;; \
-		*) echo "Error: start-cli $$v cannot pack this package, which targets start-sdk 1.x."; \
-		   echo "       Use a 0.x or 1.x start-cli, for example:"; \
-		   echo "         PATH=/path/to/older/start-cli/dir:\$$PATH make $(MAKECMDGOALS)"; \
-		   exit 1 ;; \
+		*) d=$$(pwd); \
+		   while ! grep -qs '^schema:' "$$d/.startos/config.yaml"; do \
+		     if [ "$$d" = / ]; then \
+		       echo "Error: start-cli $$v needs a packaging workspace, and none was found above $$(pwd)."; \
+		       echo "       Create one in the directory that holds your package repos:"; \
+		       echo "         cd .. && start-cli s9pk init-workspace"; \
+		       exit 1; \
+		     fi; \
+		     d=$$(dirname "$$d"); \
+		   done ;; \
 	esac
 
 check-deps:
