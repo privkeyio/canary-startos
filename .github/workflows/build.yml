@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ['master']
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    # A third party's workflow, pinned to a commit. The actions it calls still track @master,
+    # tolerable only because a PR build receives no secrets: it signs with a throwaway key.
+    uses: Start9Labs/start-technologies/.github/workflows/build.yml@872d18c8e5836a6b10bc00e3566d5c331a534348
+
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: canary.s9pk
+
+      - name: Install start-cli 2.3.0
+        run: |
+          curl -fsSL -o start-cli https://github.com/Start9Labs/start-technologies/releases/download/start-cli/v2.3.0/start-cli_x86_64-linux
+          # Signed by Start9's 5456DBFF1B9DF905041FA7765259ADFC2D63C217.
+          echo "f4bb04c96eb63e74d5c14325a2ad03c7576ede0e4189ed18558b3915c8e4a6c0  start-cli" | sha256sum -c -
+          sudo install -m 755 start-cli /usr/local/bin/start-cli
+          rm start-cli
+          start-cli --version
+
+      - name: Install unsquashfs
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends squashfs-tools
+
+      - name: Verify the package
+        run: scripts/verify-package.sh canary.s9pk "$GITHUB_SHA"
