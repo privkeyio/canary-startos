@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
@@ -40,6 +40,7 @@ jobs:
           echo "f4bb04c96eb63e74d5c14325a2ad03c7576ede0e4189ed18558b3915c8e4a6c0  start-cli" | sha256sum -c -
           sudo install -m 755 start-cli /usr/local/bin/start-cli
           rm start-cli
+          start-cli --version
 
       - name: Install unsquashfs
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends squashfs-tools

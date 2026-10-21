@@ -52,8 +52,10 @@ ingredients: $(INGREDIENTS)
 	@echo "   Re-evaluating ingredients..."
 
 # The checks CI runs on every pull request, run here on the package you are about to sign.
-verify: $(PACKAGE_ID).s9pk
-	scripts/verify-package.sh $< $$(git rev-parse HEAD)
+# It checks the existing file and never repacks it, so what passed is what gets signed.
+verify:
+	@test -f $(PACKAGE_ID).s9pk || { echo "Error: $(PACKAGE_ID).s9pk not found; run make first."; exit 1; }
+	scripts/verify-package.sh $(PACKAGE_ID).s9pk $$(git rev-parse HEAD)
 
 install: | check-deps check-init
 	@HOST=$$(awk -F'/' '/^host:/ {print $$3}' ~/.startos/config.yaml); \

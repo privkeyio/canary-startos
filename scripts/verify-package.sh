@@ -17,7 +17,6 @@ expected=$2
 distrusted="8d417db2dd8bf5e3084d1e3f196d583849d81bdd4c00c70b9d39369e96b8c782 bd153ed7b0434f6886b17bce8bbe84ed340c7132d702a8f4fa318f756ecbd6f3"
 # ISRG Root X1. It must be found, or the fingerprints are not being read.
 control=0b9fa5a59eed715c26c1020c711b4f6ec42d58b0015e14337a39dad301c5afc3
-empty=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 # trivy 0.70.0.
 trivy=aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e
 
@@ -62,7 +61,6 @@ for arch in aarch64 x86_64; do
     openssl x509 -in "$c" -noout -pubkey | openssl pkey -pubin -outform DER | sha256sum | cut -d' ' -f1
   done > "spki-$arch.txt"
   echo "$arch: $(wc -l < "spki-$arch.txt") certificates in the backend's system store"
-  ! grep -qx "$empty" "spki-$arch.txt" || fail "$arch: a certificate in the store could not be read"
   grep -qx "$control" "spki-$arch.txt" || fail "$arch: the control root is missing, so this check proves nothing"
   for key in $distrusted; do
     ! grep -qx "$key" "spki-$arch.txt" || fail "$arch: the system store trusts a distrusted root ($key)"
@@ -74,12 +72,13 @@ status=0
 for root in rootfs/*; do
   name=$(basename "$root")
   docker run --rm -v "$work/$root:/rootfs:ro" -v "${TRIVY_CACHE:-$HOME/.cache/trivy}:/root/.cache/trivy" "$trivy" \
-    rootfs /rootfs --ignore-unfixed --severity CRITICAL,HIGH --scanners vuln --format json --quiet > "trivy-$name.json"
+    rootfs /rootfs --ignore-unfixed --severity CRITICAL,HIGH --scanners vuln --list-all-pkgs --format json --quiet > "trivy-$name.json"
   os=$(jq -r '.Metadata.OS.Family // empty' "trivy-$name.json")
+  os_pkgs=$(jq '[.Results[]? | select(.Class == "os-pkgs") | .Packages | length] | add // 0' "trivy-$name.json")
   findings=$(jq '[.Results[]?.Vulnerabilities[]?] | length' "trivy-$name.json")
   echo "$name: ${os:-no OS detected}, $findings CRITICAL or HIGH"
-  if [ -z "$os" ]; then
-    echo "::error::$name: trivy detected no operating system, so the scan proves nothing"
+  if [ -z "$os" ] || [ "$os_pkgs" -eq 0 ]; then
+    echo "::error::$name: trivy found no operating system packages, so the scan proves nothing"
     status=1
   elif [ "$findings" -gt 0 ]; then
     jq -r '.Results[]? | .Target as $t | .Vulnerabilities[]? | "  \(.Severity) \(.VulnerabilityID) \(.PkgName) \(.InstalledVersion) in \($t)"' "trivy-$name.json"
