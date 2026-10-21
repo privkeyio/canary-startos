@@ -65,18 +65,19 @@ install: | check-deps check-init
 	printf "\n🚀 Installing %s to %s ...\n" "$$S9PK" "$$HOST"; \
 	start-cli package install -s "$$S9PK"
 
-# start-cli 2.x packs only inside a packaging workspace: the nearest parent
-# directory whose .startos/config.yaml sets `schema`, found by walking up from
-# here (see find_workspace_config in start-core). Without one it fails with
-# "No packaging workspace found", so check first and say how to create one.
+# From 0.4.0-beta.10, start-cli signs packs with a workspace build key: the
+# nearest parent directory holding .startos/build.key.pem (build-key before
+# 1.1.0), found by walking up from here (find_signing_workspace in start-core).
+# Without one it fails with "No packaging workspace found", so check first and
+# say how to create one. Earlier releases sign with ~/.startos and need none.
 check-cli:
 	@command -v start-cli >/dev/null || \
 		(echo "Error: start-cli not found. See https://docs.start9.com/latest/developer-guide/sdk/installing-the-sdk" && exit 1)
 	@v=$$(start-cli --version 2>/dev/null | awk '{print $$NF}'); \
 	case "$$v" in \
-		0.*|1.*) ;; \
+		0.[0-3].*|0.4.0-alpha*|0.4.0-beta.[0-9]) ;; \
 		*) d=$$(pwd); \
-		   while ! grep -qs '^schema:' "$$d/.startos/config.yaml"; do \
+		   while [ ! -e "$$d/.startos/build.key.pem" ] && [ ! -e "$$d/.startos/build-key" ]; do \
 		     if [ "$$d" = / ]; then \
 		       echo "Error: start-cli $$v needs a packaging workspace, and none was found above $$(pwd)."; \
 		       echo "       Create one in the directory that holds your package repos:"; \

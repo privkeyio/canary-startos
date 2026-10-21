@@ -2,11 +2,9 @@ import { VersionInfo } from '@start9labs/start-sdk'
 
 export const v_1_7_0_blake_1 = VersionInfo.of({
   version: '#blake:1.7.0:1',
-  releaseNotes: `Security update. Stops trusting the emSign certificate authority whose intermediate signing keys have leaked.
+  releaseNotes: `Security update. Leaked private keys for emSign intermediate certificates let anyone issue a certificate that the previous build would accept for any website. This build stops trusting the two roots those certificates chain to, emSign ECC Root CA - G3 and AAA Certificate Services, and where Canary verifies certificates itself it also rejects the leaked intermediates by key.
 
-Anyone holding those keys can issue a certificate that the previous build would accept for any website. This build no longer trusts them on any connection Canary makes: notifications over ntfy, Telegram, email and webhooks, Nostr relays, exchange rate lookups, and Electrum servers reached over ssl://.
-
-The fix covers the certificate store bundled into Canary, the certificate verifier, and the system certificate store inside the container. The bundled store for Electrum also moves to Mozilla's current list, so an ssl:// Electrum server whose certificate chains only to a root Mozilla has since retired will no longer connect. Connections to Fulcrum on this server use tcp:// and are unaffected.
+That covers every encrypted connection Canary makes, including notifications over ntfy, Telegram, email and webhooks, Nostr relays, and exchange rate lookups. The fix is in the certificate store bundled into Canary, the certificate verifier, and the system certificate store inside the container.
 
 Also updates dependencies with published security fixes.
 
