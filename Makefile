@@ -1,7 +1,7 @@
 PACKAGE_ID := $(shell awk -F"'" '/id:/ {print $$2}' startos/manifest.ts)
 INGREDIENTS := $(shell start-cli s9pk list-ingredients 2>/dev/null)
 
-.PHONY: all aarch64 x86_64 riscv64 arm arm64 x86 riscv arch/* clean install check-deps check-cli check-init package ingredients
+.PHONY: all aarch64 x86_64 riscv64 arm arm64 x86 riscv arch/* clean install verify check-deps check-cli check-init package ingredients
 .DELETE_ON_ERROR:
 .SECONDARY:
 
@@ -50,6 +50,10 @@ $(PACKAGE_ID)_%.s9pk: javascript/index.js $(INGREDIENTS) .git/HEAD .git/index
 
 ingredients: $(INGREDIENTS)
 	@echo "   Re-evaluating ingredients..."
+
+# The checks CI runs on every pull request, run here on the package you are about to sign.
+verify: $(PACKAGE_ID).s9pk
+	scripts/verify-package.sh $< $$(git rev-parse HEAD)
 
 install: | check-deps check-init
 	@HOST=$$(awk -F'/' '/^host:/ {print $$3}' ~/.startos/config.yaml); \
