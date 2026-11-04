@@ -17,12 +17,12 @@ export const current = VersionInfo.of({
   releaseNotes: {
     en_US: `Builds Canary 1.7.1 and brings in the StartOS packaging updates made since 1.5.0.
 
-Security: Next.js 16.4.2 fixes two critical remote code execution advisories and a high-severity denial of service in the web interface. Canary does not use the affected features, but update anyway. The images are rebuilt on Node.js 22.23.4 and current Debian security updates.
+Security: Next.js 16.4.2 fixes two critical remote code execution advisories and a high-severity denial of service in the web interface. Canary does not use the affected features, but update anyway. The images are rebuilt on current Node.js 22 and Debian security updates.
 
 Packaging:
 - A local ntfy is set up for notifications when it is installed.
 - Links to a local Mempool or Bitcoin Explorer open transactions there.
-- Show Login Credentials is replaced by Set Admin Password, which generates a new password and shows it once. An existing password keeps working but can no longer be displayed. If you do not have it saved, stop Canary and run Set Admin Password.
+- Show Login Credentials is replaced by Set Admin Password, which generates a new password and shows it once. An existing password keeps working but can no longer be displayed. If you do not have it saved, stop Canary and run Set Admin Password. Running it also signs out every session.
 - Select Electrum Server explains its choice and no longer preselects one.
 
 Without a local explorer, transaction links now open on mempool.guide, which follows BLAKE2b, rather than mempool.space. A saved explorer choice is kept.

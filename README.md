@@ -159,7 +159,7 @@ Chooses which Electrum server Canary Wallet reads from. Run it when its task app
 Sets the password for the web interface. Run it when its task appears, or to rotate the credential.
 
 - **When to run it:** **only while stopped** — the password is read into the server's environment at start, so it is changed between runs rather than under a running server.
-- **What it changes:** `adminPassword` in the store.
+- **What it changes:** `adminPassword` and `jwtSecret` in the store. The new JWT secret invalidates every session token, so anyone signed in with the old password is signed out on the next start.
 - **Confirmation:** once a password is set, StartOS warns that it will be replaced before running.
 - **Repeat safety:** re-runnable; the last value wins.
 - **Outputs:** the password.

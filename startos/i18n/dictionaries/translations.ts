@@ -22,7 +22,7 @@ export default {
     45: 'Contraseña',
     46: 'Establece la contraseña de administrador antes de iniciar sesión en Canary Wallet',
     47: '- Fulcrum: Fulcrum en este servidor responde a las búsquedas de direcciones.\nEl servidor que elijas debe estar instalado y en ejecución en este servidor.',
-    48: 'Esto reemplaza la contraseña de administrador actual, y la anterior deja de funcionar.',
+    48: 'Esto reemplaza la contraseña de administrador actual. La anterior deja de funcionar y se cierran todas las sesiones iniciadas.',
   },
   de_DE: {
     1: 'Weboberfläche',
@@ -45,7 +45,7 @@ export default {
     45: 'Passwort',
     46: 'Lege das Admin-Passwort fest, bevor du dich bei Canary Wallet anmeldest',
     47: '- Fulcrum: Fulcrum auf diesem Server beantwortet Adressabfragen.\nDer gewählte Server muss auf diesem Server installiert sein und laufen.',
-    48: 'Dies ersetzt das aktuelle Admin-Passwort, und das alte funktioniert nicht mehr.',
+    48: 'Dies ersetzt das aktuelle Admin-Passwort. Das alte funktioniert nicht mehr, und alle angemeldeten Sitzungen werden abgemeldet.',
   },
   pl_PL: {
     1: 'Interfejs webowy',
@@ -68,7 +68,7 @@ export default {
     45: 'Hasło',
     46: 'Ustaw hasło administratora przed zalogowaniem się do Canary Wallet',
     47: '- Fulcrum: Fulcrum na tym serwerze obsługuje wyszukiwanie adresów.\nWybrany serwer musi być zainstalowany i uruchomiony na tym serwerze.',
-    48: 'To zastępuje obecne hasło administratora, a poprzednie przestaje działać.',
+    48: 'To zastępuje obecne hasło administratora. Poprzednie przestaje działać, a wszystkie zalogowane sesje zostają wylogowane.',
   },
   fr_FR: {
     1: 'Interface web',
@@ -91,6 +91,6 @@ export default {
     45: 'Mot de passe',
     46: 'Définissez le mot de passe administrateur avant de vous connecter à Canary Wallet',
     47: "- Fulcrum : Fulcrum sur ce serveur répond aux recherches d'adresses.\nLe serveur choisi doit être installé et en cours d'exécution sur ce serveur.",
-    48: "Cela remplace le mot de passe administrateur actuel, et l'ancien cesse de fonctionner.",
+    48: "Cela remplace le mot de passe administrateur actuel. L'ancien cesse de fonctionner et toutes les sessions ouvertes sont fermées.",
   },
 } satisfies Record<string, LangDict>

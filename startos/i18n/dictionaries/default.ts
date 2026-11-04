@@ -29,7 +29,7 @@ const dict = {
   'Canary Wallet Admin Password': 42,
   'Use this password to sign in to Canary Wallet.': 43,
   Password: 45,
-  'This replaces the current admin password, and the old one stops working.': 48,
+  'This replaces the current admin password. The old one stops working and every signed-in session is signed out.': 48,
 
   // init/watchCredentials.ts
   'Set the admin password before signing in to Canary Wallet': 46,

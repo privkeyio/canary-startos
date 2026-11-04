@@ -3,7 +3,7 @@
 ## Documentation
 
 - [Canary Wallet upstream README](https://github.com/privkeyio/canary#readme) — features, supported wallet types, and notification options.
-- [Canary Wallet issue tracker](https://github.com/privkeyio/canary/issues) — bugs and feature requests.
+- [Canary Wallet issue tracker](https://github.com/privkeyio/canary-startos/issues) — bugs and feature requests.
 
 ## What you get on StartOS
 
@@ -74,4 +74,4 @@ With a local Mempool or Bitcoin Explorer installed, transaction links open there
 ### Actions
 
 - **Select Electrum Server**: select **Fulcrum** as Canary Wallet's address-lookup backend.
-- **Set Admin Password** — generate a new random password for the built-in admin account. Stop Canary Wallet before running it to rotate or recover access. Once a password is set, StartOS asks you to confirm before replacing it, since the old one stops working.
+- **Set Admin Password** — generate a new random password for the built-in admin account. Stop Canary Wallet before running it to rotate or recover access. Once a password is set, StartOS asks you to confirm before replacing it, since the old one stops working. Every signed-in browser is signed out too.

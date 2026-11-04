@@ -13,7 +13,7 @@ export const setAdminPassword = sdk.Action.withoutInput(
     ),
     warning: (await storeJson.read((s) => s.adminPassword).const(effects))
       ? i18n(
-          'This replaces the current admin password, and the old one stops working.',
+          'This replaces the current admin password. The old one stops working and every signed-in session is signed out.',
         )
       : null,
     allowedStatuses: 'only-stopped',
@@ -26,7 +26,12 @@ export const setAdminPassword = sdk.Action.withoutInput(
       charset: 'a-z,A-Z,0-9',
       len: 32,
     })
-    await storeJson.merge(effects, { adminPassword })
+    // A new JWT secret signs out every session made with the old password.
+    const jwtSecret = utils.getDefaultString({
+      charset: 'a-z,A-Z,0-9',
+      len: 64,
+    })
+    await storeJson.merge(effects, { adminPassword, jwtSecret })
 
     return {
       version: '1',
