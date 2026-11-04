@@ -1,7 +1,7 @@
 import { sdk } from '../sdk'
 import { selectElectrum } from './selectElectrum'
-import { showLoginCredentials } from './showLoginCredentials'
+import { setAdminPassword } from './setAdminPassword'
 
 export const actions = sdk.Actions.of()
   .addAction(selectElectrum)
-  .addAction(showLoginCredentials)
+  .addAction(setAdminPassword)

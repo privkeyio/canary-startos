@@ -1,18 +1,21 @@
 import { storeJson } from '../fileModels/store.json'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
 const { InputSpec, Value } = sdk
 
 const inputSpec = InputSpec.of({
   electrum: Value.select({
-    name: 'Electrum Server',
-    // Electrs is not offered for now. A BLAKE2b-aware Electrs exists as source, but no StartOS
-    // package of it does, and the packaged one stops at the activation height. Restore this entry
-    // if such a package appears; nothing else here has to change.
+    name: i18n('Electrum Server'),
+    description: i18n(
+      '- Fulcrum: Fulcrum on this server answers address lookups.\nThe server you choose must be installed and running on this server.',
+    ),
     values: {
-      fulcrum: 'Fulcrum',
+      // Electrs is not offered: no StartOS package of it follows BLAKE2b, and the packaged one
+      // stops at the activation height.
+      fulcrum: i18n('Fulcrum'),
     },
-    default: 'fulcrum',
+    default: null,
   }),
 })
 
@@ -20,8 +23,10 @@ export const selectElectrum = sdk.Action.withInput(
   'select-electrum',
 
   async ({ effects }) => ({
-    name: 'Select Electrum Server',
-    description: 'Select which Electrum server to use for address lookups',
+    name: i18n('Select Electrum Server'),
+    description: i18n(
+      'Select which Electrum server to use for address lookups',
+    ),
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -33,8 +38,6 @@ export const selectElectrum = sdk.Action.withInput(
 
   // optionally pre-fill the input form
   async ({ effects }) => {
-    // An install from before the BLAKE2b change may have 'electrs' stored, which is no longer
-    // offered. Leave the field empty in that case so a supported server has to be chosen.
     const stored = await storeJson.read((s) => s.electrum).once()
     return { electrum: stored === 'fulcrum' ? stored : undefined }
   },
