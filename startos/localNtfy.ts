@@ -1,0 +1,147 @@
+import { T, utils } from '@start9labs/start-sdk'
+import {
+  uiHostId as ntfyUiHostId,
+  uiInterfaceId as ntfyUiInterfaceId,
+} from 'ntfy-startos/startos/utils'
+import { storeJson } from './fileModels/store.json'
+import { sdk } from './sdk'
+
+export const ntfyPublisherId = 'canary'
+export const ntfyTopic = 'canary'
+
+export type NtfyProvisioning = {
+  publishUrl: string
+  token: string
+  topic: string
+}
+
+export async function isNtfyInstalled(effects: T.Effects): Promise<boolean> {
+  return sdk.host
+    .get(
+      effects,
+      { packageId: 'ntfy', hostId: ntfyUiHostId },
+      (host) => host !== null,
+    )
+    .const()
+}
+
+function ntfyBridgeUrl(host: utils.FilledHost | null): string | null {
+  const iface =
+    host &&
+    Object.values(host.bindings)
+      .flatMap((binding) => Object.values(binding.interfaces))
+      .find((candidate) => candidate.id === ntfyUiInterfaceId)
+
+  return (
+    iface?.addressInfo
+      .filter({ kind: 'bridge', predicate: (address) => !address.ssl })
+      .format('urlstring')[0] ?? null
+  )
+}
+
+async function getNtfyPublishUrl(effects: T.Effects): Promise<string | null> {
+  return sdk.host
+    .get(effects, { packageId: 'ntfy', hostId: ntfyUiHostId }, ntfyBridgeUrl)
+    .const()
+}
+
+function parseProvisioningResult(
+  result: T.ActionResult | null,
+): NtfyProvisioning | null {
+  if (
+    !result ||
+    result.version !== '1' ||
+    !result.result ||
+    result.result.type !== 'group'
+  ) {
+    return null
+  }
+
+  // ntfy translates member names; its publisher result has a fixed field order.
+  const [urlMember, tokenMember, topicMember] = result.result.value
+  const value = (member: T.ActionResultMember | undefined) =>
+    member?.type === 'single' ? member.value : null
+  const publishUrl = value(urlMember)
+  const token = value(tokenMember)
+  const topic = value(topicMember)
+
+  if (!publishUrl || !token || !topic) {
+    return null
+  }
+
+  return { publishUrl, token, topic }
+}
+
+async function provisionNtfy(
+  effects: T.Effects,
+): Promise<NtfyProvisioning | null> {
+  const result = await sdk.action
+    .run({
+      effects,
+      packageId: 'ntfy',
+      actionId: 'provision-publisher',
+      input: () => ({ packageId: ntfyPublisherId, topic: ntfyTopic }),
+    })
+    .catch((error) => {
+      console.warn('Failed to provision local ntfy publisher', error)
+      return null
+    })
+
+  return parseProvisioningResult(result)
+}
+
+// No reactive reads: restore must clear the old token only once, before watchers.
+export const clearRestoredNtfy = sdk.setupOnInit(async (effects, kind) => {
+  if (kind === 'restore') {
+    await storeJson.merge(effects, { ntfy: undefined })
+  }
+})
+
+export const clearRemovedNtfy = sdk.setupOnInit(async (effects) => {
+  const status = await sdk.getStatus(effects, { packageId: 'ntfy' }).const()
+  if (status === null && (await storeJson.read((s) => s.ntfy).once())) {
+    await storeJson.merge(effects, { ntfy: undefined })
+  }
+})
+
+// Cache successes; do not loop on an unparseable result: the action has
+// already minted a token.
+export async function provisionLocalNtfy(effects: T.Effects) {
+  const status = await sdk.getStatus(effects, { packageId: 'ntfy' }).const()
+  if (!status?.started || (await storeJson.read((s) => s.ntfy).once())) {
+    return
+  }
+
+  const provisioned = await provisionNtfy(effects)
+  if (provisioned) {
+    await storeJson.merge(effects, { ntfy: provisioned })
+    return
+  }
+
+  console.warn(
+    'Local ntfy is running but Provision Publisher did not return credentials',
+  )
+}
+
+// Saved application settings take precedence over these package defaults.
+export async function getLocalNtfyEnv(
+  effects: T.Effects,
+  storedNtfy: NtfyProvisioning | undefined,
+): Promise<Record<string, string>> {
+  const publishUrl =
+    (await getNtfyPublishUrl(effects)) ?? storedNtfy?.publishUrl
+  if (!publishUrl) {
+    return {}
+  }
+
+  const env: Record<string, string> = {
+    CANARY_NTFY_SERVER_URL: publishUrl,
+  }
+
+  if (storedNtfy) {
+    env.CANARY_NTFY_TOKEN = storedNtfy.token
+    env.CANARY_NTFY_TOPIC = storedNtfy.topic
+  }
+
+  return env
+}

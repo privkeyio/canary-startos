@@ -1,33 +1,77 @@
-# Canary
-
-Canary monitors watch-only Bitcoin wallets and addresses. It needs a running,
-fully synced Electrum server before it can look up balances and transactions.
-
-## First-time setup
-
-1. Install and sync either **Fulcrum** or **Electrs** on this StartOS server.
-2. Open Canary's service page and resolve the **Select Electrum Server** task.
-   Choose the Electrum service you installed.
-3. Start Canary and wait for its health check to pass.
-4. Run the **Show Login Credentials** action and save the generated password.
-   The username is `admin@local`.
-5. Open **Web UI**, sign in, and follow the wallet wizard to add a descriptor or
-   Bitcoin address.
-
-Canary is watch-only. It does not need seed words or private keys; do not enter
-either into the application.
-
-## Notifications
-
-Configure notification methods and balance alerts from Canary's **Settings**
-page. Use the notification test before relying on an alert for monitoring.
-
-## Backup and recovery
-
-Include Canary in your normal StartOS backups. Restoring its StartOS backup
-restores the service data and generated login credentials.
+# Canary Wallet
 
 ## Documentation
 
-- [Canary website](https://canarybitcoin.com)
-- [Canary source and issue tracker](https://github.com/schjonhaug/canary)
+- [Canary Wallet upstream README](https://github.com/privkeyio/canary#readme) — features, supported wallet types, and notification options.
+- [Canary Wallet issue tracker](https://github.com/privkeyio/canary-startos/issues) — bugs and feature requests.
+
+## What you get on StartOS
+
+- A **Web UI** for Canary Wallet on the bundled `ui` interface.
+- A watch-only monitor that looks up your wallets through your own local **Fulcrum**. Addresses never leave your StartOS.
+- Support for Bitcoin's change of proof of work to BLAKE2b. Canary Wallet keeps syncing past the activation height.
+- A built-in admin account whose password is generated and rotated by a StartOS action.
+
+## Getting set up
+
+1. Install the **BLAKE2b flavor of Fulcrum** on StartOS and let it fully sync. Canary Wallet will not start until it is selected and running. Electrs and the standard Fulcrum are not supported.
+2. On first install, StartOS posts a critical **Set Admin Password** task. Run it and copy the generated password to a password manager — you'll need it to sign in.
+3. StartOS also posts a critical **Select Electrum Server** task. Run it and pick **Fulcrum**. Nothing is preselected.
+4. Open the **Web UI** and sign in with the password from step 2.
+
+## Using Canary Wallet
+
+### Adding a wallet
+
+1. In the Web UI, click **Add Wallet**.
+2. Give it a name (e.g. "Cold Storage", "Hardware Wallet").
+3. Paste your **extended public key** (xpub / ypub / zpub) or **output descriptor**.
+4. Click **Create**. The wallet begins syncing — initial scans for wallets with deep address indexes can take a few minutes; Canary Wallet detects high indexes automatically.
+
+Canary Wallet is watch-only — it only consumes public keys, never holds them, and cannot spend.
+
+### Notifications
+
+Each wallet contact can use one or more notification methods:
+
+- **ntfy** sends push notifications through [ntfy.sh](https://ntfy.sh) or a self-hosted ntfy server.
+- **Nostr DM** sends encrypted direct messages to an npub or hex public key. Canary Wallet supports modern NIP-17 and legacy NIP-04 delivery modes.
+- **JSON webhook** sends structured self-hosted events to an HTTP or HTTPS endpoint reachable from the Canary Wallet backend. Use the contact editor's test button before saving.
+
+For every contact, choose which transaction stages and special events to send: incoming or outgoing pending transactions, confirmations, RBF replacements, and CPFP relationships. Content controls are also per notification method, so you decide whether a message may disclose the wallet name, event type, transaction amount or balance, and balance-alert condition, threshold, or current balance.
+
+To use public ntfy push notifications:
+
+1. Install the ntfy app ([Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy) / [iOS](https://apps.apple.com/app/ntfy/id1625396347)) and subscribe to a topic of your choice.
+2. In Canary Wallet, add a contact, enable **ntfy**, and paste the same topic.
+3. Use the inline test before saving the contact.
+
+#### Using the StartOS ntfy service (optional)
+
+Install Start9's **ntfy** package either before or after Canary Wallet. When ntfy is installed and running, Canary Wallet provisions a local publisher for you and uses it as the default ntfy server. Settings you have already saved in Canary Wallet are not overwritten, and wallet contacts are still created by you.
+
+1. Install **ntfy** and let it finish starting. Canary Wallet detects ntfy automatically, including when installed later.
+2. In Canary Wallet's settings, choose the local **ntfy** server if it is not already selected. The default topic is `canary`.
+3. In ntfy, run **Create User**, then **Grant User Topic Access** to give that user **read-only** access to `canary` (or your chosen topic).
+4. On your phone, point the ntfy app at your StartOS ntfy package's **public** address (LAN or Tor, the same one you'd open in a browser) and subscribe to that topic with a user that has read access.
+
+Use the contact editor's test button before saving. Canary Wallet does not create wallet contacts automatically.
+
+If you previously pasted `http://ntfy.startos` as a custom URL, switch to the listed local ntfy option so Canary Wallet uses the provisioned publisher.
+
+You can still provision by hand if you prefer: on ntfy, run **Provision Publisher** with publisher ID `canary` and the topic you want, then paste the returned URL, token, and topic into Canary Wallet's settings.
+
+For a JSON webhook, enter the receiver's complete URL in the contact editor. The request originates from Canary Wallet's backend container, not your browser, so `localhost` refers to Canary Wallet itself. Treat URL paths and query strings as secrets even though collapsed contact summaries show only the origin.
+
+### Balance alerts
+
+Set per-wallet thresholds in the Web UI to fire when a balance goes **above**, **below**, or **equals** a target amount. Alerts use the same push channel as transaction notifications.
+
+### Transaction links
+
+With a local Mempool or Bitcoin Explorer installed, transaction links open there. Without one, they open on mempool.guide, a public explorer that follows BLAKE2b. You can pick another explorer in Canary Wallet's settings, but mempool.space and the other public options do not show blocks past the activation height.
+
+### Actions
+
+- **Select Electrum Server**: select **Fulcrum** as Canary Wallet's address-lookup backend.
+- **Set Admin Password** — generate a new random password for the built-in admin account. Stop Canary Wallet before running it to rotate or recover access. Once a password is set, StartOS asks you to confirm before replacing it, since the old one stops working. Every signed-in browser is signed out too.

@@ -1,16 +1,25 @@
 import { sdk } from '../sdk'
-import { setDependencies } from '../dependencies'
+import { dependencies } from '../dependencies'
 import { setInterfaces } from '../interfaces'
-import { versionGraph } from '../install/versionGraph'
+import { versionGraph } from '../versions'
 import { actions } from '../actions'
 import { restoreInit } from '../backups'
+import { clearRemovedNtfy, clearRestoredNtfy } from '../localNtfy'
+import { seedFiles } from './seedFiles'
+import { taskSelectElectrum } from './taskSelectElectrum'
+import { watchCredentials } from './watchCredentials'
 
 export const init = sdk.setupInit(
   restoreInit,
   versionGraph,
+  seedFiles,
   setInterfaces,
-  setDependencies,
+  clearRestoredNtfy,
   actions,
+  dependencies,
+  watchCredentials,
+  taskSelectElectrum,
+  clearRemovedNtfy,
 )
 
 export const uninit = sdk.setupUninit(versionGraph)
